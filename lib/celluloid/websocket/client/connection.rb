@@ -7,7 +7,7 @@ module Celluloid
         include Celluloid::IO
         extend Forwardable
 
-        def initialize(url, handler)
+        def initialize(url, handler=nil)
           @url = url
           uri = URI.parse(url)
           port = uri.port || (uri.scheme == "ws" ? 80 : 443)
@@ -15,9 +15,15 @@ module Celluloid
           @client = ::WebSocket::Driver.client(self)
           @handler = handler
 
-          async.run
+          start
         end
+
         attr_reader :url
+        attr_accessor :handler
+
+        def start
+          async.run if handler
+        end
 
         def run
           @client.on('open') do |event|
